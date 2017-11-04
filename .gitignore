@@ -6,3 +6,5 @@ collected_static/*
 /media/*
 !/course
 /course/*
+.idea/inspectionProfiles/
+.idea/workspace.xml
