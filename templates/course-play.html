@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
-{% block title %}公开课视频信息-慕学在线网{% endblock %}
+{% block title %}{{ video.name }}-慕学在线网{% endblock %}
 
 {% block custom_bread %}
     <section>
@@ -8,8 +8,8 @@
             <ul  class="crumbs">
                 <li><a href="/">首页</a>></li>
                 <li><a href="{% url 'course:course_list' %}">公开课</a>></li>
-                <li><a href="{% url 'course:course_detail' course.id %}">课程详情</a>></li>
-                <li>章节信息</li>
+                <li><a href="{% url 'course:course_detail' course.id %}">{{ course.name }}</a>></li>
+                <li>{{ video.name }}</li>
             </ul>
         </div>
     </section>
@@ -22,36 +22,25 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/aui.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'css/mooc.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'css/muke/course/common-less.css' %}" />
+    <link href=”http://vjs.zencdn.net/c/video-js.css” rel=”stylesheet”>
+    <style>
+    .video-js .vjs-big-play-button{
+        top: 50%;
+        left: 50%;
+    }
+    </style>
 {% endblock %}
 
 {% block content %}
     <div id="main">
-    <div class="course-infos">
-        <div class="w pr">
-            <div style="height: 15px" class="path">
-            </div>
-            <div class="hd">
-                <h2 class="l">{{ course.name }}</h2>
-            </div>
-            <div class="statics clearfix">
-                <div class="static-item ">
-                    <span class="meta-value"><strong>{{ course.get_degree_display }}</strong></span>
-                    <span class="meta">难度</span>
-                    <em></em>
-                </div>
-                <div class="static-item static-time">
-                    <span class="meta-value">{{ course.learn_time }}分钟</span>
-                    <span class="meta">时长</span>
-                    <em></em>
-                </div>
-                <div class="static-item">
-                    <span class="meta-value"><strong>{{ course.students }}</strong></span>
-                    <span class="meta">学习人数</span>
-                    <em></em>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div style="width:1200px;height:675px;margin-left: 340px">
+    <video id="example_video_1" class="video-js vjs-default-skin" autoplay controls preload="none" width="1200"
+           poster="my_video_poster.png"
+           data-setup="{ }"
+            style="width: 1200px;height:675px">
+        <source src="{{ video.url }}" type="video/mp4">
+    </video>
+</div>
     <div class="course-info-main clearfix w has-progress">
 
         <div class="info-bar clearfix">
@@ -60,12 +49,12 @@
                 <div class="mod-tab-menu">
                     <ul class="course-menu clearfix">
                         <li><a class="ui-tabs-active active" id="learnOn"  href="{% url 'course:course_info' course.id %}"><span>章节</span></a></li>
-                        <li><a id="commentOn" class="" href="{% url 'course:course_comments' course.id %}"><span>评论</span></a></li>
+                        {% comment %}<li><a id="commentOn" class="" href="{% url 'course:course_comments' course.id %}"><span>评论</span></a></li>{% endcomment %}
                     </ul>
                 </div>
-                <div id="notice" class="clearfix">
+                {% comment %}<div id="notice" class="clearfix">
                     <div class="l"> <strong>课程公告:</strong> <a  href="javascript:void(0)">Spring的文档以及相关的jar文件已上传</a> </div>
-                </div>
+                </div>{% endcomment %}
 
                 <div class="mod-chapters">
                     {% for lesson in course.get_course_lesson %}
@@ -79,10 +68,10 @@
                                 <a target="_blank" href="{% url 'course:video_play' video.id %}" class="J-media-item studyvideo">{{ video.name }} ({{ video.learn_time }})
                                     <i class="study-state"></i>
                                 </a>
-                         </li>
-                         {% endfor %}
+                            </li>
+                            {% endfor %}
 
-                     </ul>
+                        </ul>
                     </div>
                     {% endfor %}
 
@@ -166,4 +155,7 @@
 
 </div>
 </div>
+{% endblock %}
+{% block custom_js %}
+<script src=”http://vjs.zencdn.net/c/video.js”></script>
 {% endblock %}
