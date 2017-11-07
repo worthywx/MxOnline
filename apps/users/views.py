@@ -7,8 +7,9 @@ from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
 
 from .models import UserProfile, EmailVerifyRecord
-from .forms import LoginForm, RegisterForm, ForgetForm, ModifyForm
+from .forms import LoginForm, RegisterForm, ForgetForm, ModifyForm, UploadImageForm
 from utils.email_send import send_register_email
+from utils.mixin_util import LoginRequiredMixin
 
 
 class CustomBackend(ModelBackend):
@@ -124,3 +125,23 @@ class ModifyView(View):
             return render(request, "login.html")
         else:
             return render(request, "password_reset.html", {"email":email, "modify_form":modify_form})
+
+
+class UserinfoView(LoginRequiredMixin, View):
+    """
+    用户个人信息
+    """
+    def get(self, request):
+        return render(request, "usercenter-info.html", {
+
+        })
+
+class UploadImageView(LoginRequiredMixin, View):
+    """
+    用户上传头像
+    """
+    def post(self, request):
+        image_form = UploadImageForm(request.POST, request.FILES, instance=request.user)
+        if image_form.is_valid():
+           image_form.save()
+           pass
