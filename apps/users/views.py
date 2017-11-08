@@ -1,15 +1,19 @@
 # coding=utf-8
+import json
+
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
+from django.http import HttpResponse
 
 from .models import UserProfile, EmailVerifyRecord
-from .forms import LoginForm, RegisterForm, ForgetForm, ModifyForm, UploadImageForm
+from .forms import LoginForm, RegisterForm, ForgetForm, ModifyForm, UploadImageForm, UserInfoForm
 from utils.email_send import send_register_email
 from utils.mixin_util import LoginRequiredMixin
+from operation.models import UserCourse
 
 
 class CustomBackend(ModelBackend):
@@ -111,6 +115,9 @@ class ResetView(View):
 
 
 class ModifyView(View):
+    """
+    修改用户密码
+    """
     def post(self, request):
         modify_form = ModifyForm(request.POST)
         email = request.POST.get("email", "")
@@ -132,9 +139,15 @@ class UserinfoView(LoginRequiredMixin, View):
     用户个人信息
     """
     def get(self, request):
-        return render(request, "usercenter-info.html", {
+        return render(request, "usercenter-info.html", {})
 
-        })
+    def post(self, request):
+        user_info_form = UserInfoForm(request.POST, instance=request.user)
+        if user_info_form.is_valid():
+            user_info_form.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse(json.dumps(user_info_form.errors), content_type='application/json')
 
 class UploadImageView(LoginRequiredMixin, View):
     """
@@ -144,4 +157,68 @@ class UploadImageView(LoginRequiredMixin, View):
         image_form = UploadImageForm(request.POST, request.FILES, instance=request.user)
         if image_form.is_valid():
            image_form.save()
-           pass
+           return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status":"fail"}', content_type='application/json')
+
+
+class UpdatePwdView(View):
+    """
+    个人中心修改用户密码
+    """
+    def post(self, request):
+        modify_form = ModifyForm(request.POST)
+        if modify_form.is_valid():
+            pwd1 = request.POST.get("password1", "")
+            pwd2 = request.POST.get("password2", "")
+            if pwd1 != pwd2:
+                return HttpResponse('{"status":"fail","msg":"密码不一致"}', content_type='application/json')
+            user = request.user
+            user.password = make_password(pwd1)
+            user.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse(json.dumps(modify_form.errors), content_type='application/json')
+
+
+class SendEmailCodeView(LoginRequiredMixin, View):
+    """
+    发送邮箱验证码
+    """
+    def get(self, request):
+        email = request.GET.get("email", "")
+
+        #判断邮箱是否存在
+        if UserProfile.objects.filter(email=email):
+            return HttpResponse('{"email":"邮箱已经存在"}', content_type='application/json')
+        send_register_email(email, "update_email")
+
+        return HttpResponse('{"status":"success"}', content_type='application/json')
+
+class UpdateEmailView(LoginRequiredMixin, View):
+    """
+    修改个人邮箱
+    """
+    def post(self, request):
+        email = request.POST.get("email", '')
+        code = request.POST.get("code", "")
+
+        existed_records = EmailVerifyRecord.objects.filter(email=email, code=code, send_type="update_email")
+        if existed_records:
+            user = request.user
+            user.email = email
+            user.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"email":"验证码错误"}', content_type='application/json')
+
+
+class MyCourseView(LoginRequiredMixin, View):
+    """
+    我的课程
+    """
+    def get(self, request):
+        user_courses = UserCourse.objects.filter(user=request.user)
+        return render(request, "usercenter-mycourse.html", {
+            "user_courses": user_courses
+        })
