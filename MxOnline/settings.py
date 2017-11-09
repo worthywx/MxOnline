@@ -96,7 +96,7 @@ DATABASES = {
         'NAME': "mxonline",
         'USER': 'root',
         'PASSWORD': 'worthy',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'OPTIONS': {
             'init_command':"SET foreign_key_checks=0;",
         }

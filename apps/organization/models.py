@@ -43,6 +43,9 @@ class CourseOrg(models.Model):
     def get_teacher_nums(self):
         return self.teacher_set.all().count()
 
+    def get_classic_course(self):
+        return self.course_set.all().order_by('-fav_nums')[:2]
+
     def __unicode__(self):
         return self.name
 

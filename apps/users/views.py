@@ -1,5 +1,6 @@
 # coding=utf-8
 import json
+from datetime import datetime
 
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login
@@ -62,8 +63,9 @@ class RegisterView(View):
             user_profile.password = make_password(pass_word)
             user_profile.save()
 
+            #注册成功发用户消息
             user_message = UserMessage()
-            user_message.user = user_profile
+            user_message.user = user_profile.id
             user_message.message = "欢迎注册"
             user_message.save()
 
@@ -87,6 +89,12 @@ class LoginView(View):
             if user is not None:
                 if user.is_active:
                     login(request, user)
+
+                    # 登录成功发用户消息
+                    user_message = UserMessage()
+                    user_message.user = user.id
+                    user_message.message = "您于 {} 成功登录".format(datetime.now())
+                    user_message.save()
                     return render(request, "index.html")
                 else:
                     return render(request, "login.html", {"msg": "用户名未激活!"})
@@ -256,7 +264,7 @@ class MyFavTeacherView(LoginRequiredMixin, View):
         fav_teachers = UserFavorite.objects.filter(user=request.user, fav_type=3)
         for fav_teacher in fav_teachers:
             teacher_id = fav_teacher.fav_id
-            teacher = CourseOrg.objects.get(id=teacher_id)
+            teacher = Teacher.objects.get(id=teacher_id)
             teacher_list.append(teacher)
         return render(request, "usercenter-fav-teacher.html", {
             "teacher_list": teacher_list
@@ -284,7 +292,7 @@ class MyMessageView(LoginRequiredMixin, View):
     """
     def get(self, request):
         all_messages = UserMessage.objects.filter(user=request.user.id)
-        # 对课程机构进行分页
+        # 对我的消息进行分页
         try:
             page = request.GET.get('page', 1)
         except PageNotAnInteger:

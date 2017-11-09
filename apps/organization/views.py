@@ -97,7 +97,8 @@ class OrgHomeView(View):
             "all_teachers": all_teachers,
             "course_org":course_org,
             "current_page": current_page,
-            "has_fav": has_fav
+            "has_fav": has_fav,
+            "org_id": org_id
         })
 
 class OrgCourseView(View):
