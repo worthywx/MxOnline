@@ -27,7 +27,7 @@ SECRET_KEY = 'rq#+!9prcyl--f0x4#tt7ep(*ag@6_wbf0t^-up8_^pt6n*@3s'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 AUTHENTICATION_BACKENDS = (
     'users.views.CustomBackend',
@@ -147,6 +147,8 @@ STATICFILES_DIRS = (
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+#STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 #TEMPLATE_DIRS = (os.path.join(BASE_DIR,  'templates'),)
 
